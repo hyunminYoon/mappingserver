@@ -1,0 +1,23 @@
+device,component,data,project,serial,vp,sensor,unit
+AC Motor,Power,Line 1 Current RMS,테스트 AC모터,ADTC01000201,Power,Line1CurrentRMS,A
+AC Motor,Power,Line 1 Voltage RMS,테스트 AC모터,ADTC01000201,Power,Line1VoltageRMS,V
+AC Motor,Power,Line 1 power factor,테스트 AC모터,ADTC01000201,Power,Line1PowerFactor,%
+AC Motor,Power,Line 2 Current RMS,테스트 AC모터,ADTC01000201,Power,Line2CurrentRMS,A
+AC Motor,Power,Line 2 Voltage RMS,테스트 AC모터,ADTC01000201,Power,Line2VoltageRMS,V
+AC Motor,Power,Line 2 power factor,테스트 AC모터,ADTC01000201,Power,Line2PowerFactor,%
+AC Motor,Power,Line 3 Current RMS,테스트 AC모터,ADTC01000202,Power2,Line3CurrentRMS,A
+AC Motor,Power,Line 3 Voltage RMS,테스트 AC모터,ADTC01000202,Power2,Line3VoltageRMS,V
+AC Motor,Power,Line 3 power factor,테스트 AC모터,ADTC01000202,Power2,Line3PowerFactor,%
+AC Motor,Motor,Vibration X RMS,테스트 AC모터,ADTC01000203,Motor,VibrationXRMS,m/s^2
+AC Motor,Motor,Vibration Y RMS,테스트 AC모터,ADTC01000203,Motor,VibrationYRMS,m/s^2
+AC Motor,Motor,Vibration Z RMS,테스트 AC모터,ADTC01000203,Motor,VibrationZRMS,m/s^2
+AC Motor,Motor,Tacho Speed,테스트 AC모터,ADTC01000203,Motor,TachoSpeed,RPM
+AC Motor,Motor,Temperature,테스트 AC모터,ADTC01000204,Motor2,MotorTemperature,°C
+AC Motor,FAN,Air Pressure,테스트 AC모터,ADTC01000204,FAN,AirPressure,Pascal
+AC Motor,FAN,Differential Pressure,테스트 AC모터,ADTC01000204,FAN,DifferentialPressure,Pascal
+AC Motor,FAN,Microphone RMS,테스트 AC모터,ADTC01000202,FAN2,MicRMS,°dB
+AC Motor,FAN,Microphone Band 1,테스트 AC모터,ADTC01000202,FAN2,MicBand1,°dB
+AC Motor,FAN,Microphone Band 2,테스트 AC모터,ADTC01000202,FAN2,MicBand2,°dB
+AC Motor,FAN,Microphone Band 3,테스트 AC모터,ADTC01000202,FAN2,MicBand3,°dB
+AC Motor,Ambient,Temperature,테스트 AC모터,ADTC01000204,Ambient,AmbientTemperature,°C
+AC Motor,Ambient,Humidity,테스트 AC모터,ADTC01000204,Ambient,AmbientHumidity,°%
