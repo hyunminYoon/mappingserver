@@ -1,6 +1,6 @@
 // import Library
 const hostname = '0.0.0.0';
-const port = process.env.NODE_PORT || 6028;
+const port = process.env.NODE_PORT || 6027;
 const env = process.env;
 
 var async = require('async');
@@ -80,6 +80,7 @@ function readCSV(filePath) {
         }else {
             // var data = {}; // 빈 객체를 생성하고 여기에 데이터를 추가한다.
             var data = [];
+            console.log("columns",columns)
             for (var columnIndex in columns) { // 칼럼 갯수만큼 돌면서 적절한 데이터 추가하기.
                 var column = columns[columnIndex];
                 data.push(row[columnIndex]);
@@ -96,7 +97,7 @@ function readCSV(filePath) {
     }
     //console.log("b",devices);
     devices = Array.from(new Set(devices));
-    //console.log("c",devices);
+    console.log("c",devices);
 
     return {'result':result, 'columns':columns,'devices':devices};
 }
@@ -151,9 +152,9 @@ app.post('/api/v1/mapping/file', (req,res)=>{
                 statement.run(data.result[i], function (err) { 
                         if (err){                        
                             count_err++;
-                            // console.log('err',count_err,i,data.result.length)
+                            // console.log('err',count_err,i,data.result.length,err)
                             if(data.result.length == count+ count_err){
-                                return res.status(400).send(`Finished but, ${count_err} rows can not insert.`)
+                                return res.status(400).send(`Finished but, ${count_err} rows can not insert1.`)
                             }
                         } else{
                             count++;
@@ -175,6 +176,55 @@ app.post('/api/v1/mapping/file', (req,res)=>{
     })
 })
 
+app.get('/api/v1/data/devices', (req,res)=>{
+    db.all('SELECT * FROM MapTable', (err, rows)=>{ 
+
+        if(err) return res.status(400).send(err.message)
+     
+        if(rows){
+        var devices=[];            
+        var arr1=[];
+
+        rows.forEach(row=> {
+            arr1.push(row.device)
+        })
+        // console.log(arr1)
+
+        function removeDuplicatesArray(arr) {
+            var tempArr = [];
+            for (var i = 0; i < arr.length; i++) {
+                if (tempArr.length == 0) {
+                    tempArr.push(arr[i]);
+                } else {
+                    var duplicatesFlag = true;
+                    for (var j = 0; j < tempArr.length; j++) {
+                        if (tempArr[j] == arr[i]) {
+                            duplicatesFlag = false;
+                            break;
+                        }
+                    }
+                    if (duplicatesFlag) {
+                        tempArr.push(arr[i]);
+                    }
+                }
+            }
+            return tempArr;
+        }
+
+        var arr2 = removeDuplicatesArray(arr1);
+        
+        arr2.forEach(arr=> {
+            devices.push({"device_series":arr})
+        })
+    
+        // console.log(removeDuplicatesArray(arr1));
+       
+        return res.json(devices)
+
+        }
+     })
+    
+ })
 
 // 맵핑 정보확인 API
 app.get('/api/v1/data/devices/:device_serial/map', (req,res)=>{
@@ -240,7 +290,7 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
     // console.log(serial)
     db.all('SELECT * FROM MapTable WHERE device=?', serial,(err, rows)=>{ 
         if(err) return res.status(400).send(err.message)
-        //console.log("aa",rows)
+        console.log("aa",rows)
 
         if(rows){
             var urls =[];
@@ -343,12 +393,12 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
                 //    console.log(d)
                    return {'sensor_id':d, 'data':test_data[d]};
                 })
+                //console.log("d",data_set);
                 return res.send(data_set)
             });
         }
     })
 })
-
 
 function getData(url, cb){
     // urls.for
