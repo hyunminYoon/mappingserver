@@ -232,7 +232,7 @@ app.get('/api/v1/data/devices/:device_serial/info', (req,res)=>{
 })
 
 // Core server IP Address
-const core_server_host ='http://localhost:5000';
+const core_server_host ='http://15.165.100.92:5000';
 
 // Data of Device Sensor(component)
 app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
@@ -240,6 +240,7 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
     // console.log(serial)
     db.all('SELECT * FROM MapTable WHERE device=?', serial,(err, rows)=>{ 
         if(err) return res.status(400).send(err.message)
+        //console.log("aa",rows)
 
         if(rows){
             var urls =[];
@@ -252,13 +253,14 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
                 vps[row.vp].push(row.sensor);
                 urls.push(url)
                 
-                // console.log(url)
+                 // console.log("aa",url)
             })
             var urls_set = Array.from(new Set(urls));
             var urls_set2 = Array.from(new Set(urls));
-            
+            // console.log("aa",rows)
             
             urls_set = urls_set.map(u=>{
+                // console.log("a",req.query.start_time);
                 // add Start time 
                 if('start_time' in req.query){
                     u +='?start_time='+req.query.start_time;
@@ -275,26 +277,55 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
 
                 return u
             })
+
+            // console.log("e",urls_set);
             
-            // API 동시 호출(비동기처기)
+            // API 동시 호출(비동기처리)
             async.map(urls_set, getData, function (err, total_response){
                 if (err) return console.log(err);
-                
+                // console.log("b",total_response[0][0].time);
+                // console.log("e",total_response);
+                // console.log("c",urls_set2);
+               //if('min' in req.query){
 
                 var test_data={};
                 urls_set2.forEach((url,j)=>{
                     var target_vp = url.split('/')[6];
                     total_response[j].forEach((d,i)=>{
+                    
                         vps[target_vp].forEach((sensor)=>{
-                            // 객체 초기화
+                            //  console.log("d",d)
+                            //  console.log("i",i)
+                           // 객체 초기화
                             if(i == 0){
                                 test_data[sensor] = [];
                             }
                             // 객체에 데이터 추가
-                            test_data[sensor].push({
+                            if('sec' in req.query & !('min' in req.query) & !('hour' in req.query)){
+                                if (i % req.query.sec == 0){
+                                    test_data[sensor].push({
+                                    "time":d.time,
+                                    "value":d[sensor]
+                            })}}
+                            
+                            else if('min' in req.query & !('sec' in req.query) & !('hour' in req.query)){
+                                if (i % (57*req.query.min) == 0){
+                                    test_data[sensor].push({
+                                    "time":d.time,
+                                    "value":d[sensor]
+                            })}}
+
+                            else if('hour' in req.query & !('sec' in req.query) & !('min' in req.query)){
+                                if (i % (req.query.hour*3375) == 0){
+                                    test_data[sensor].push({
+                                    "time":d.time,
+                                    "value":d[sensor]
+                            })}}
+                            else{
+                                test_data[sensor].push({
                                 "time":d.time,
                                 "value":d[sensor]
-                            })
+                            })}
                         })
                     })
                 })
