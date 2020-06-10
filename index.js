@@ -1,6 +1,6 @@
 // import Library
 const hostname = '0.0.0.0';
-const port = process.env.NODE_PORT || 6027;
+const port = process.env.NODE_PORT || 6063;
 const env = process.env;
 
 var async = require('async');
@@ -80,7 +80,7 @@ function readCSV(filePath) {
         }else {
             // var data = {}; // 빈 객체를 생성하고 여기에 데이터를 추가한다.
             var data = [];
-            console.log("columns",columns)
+            // console.log("columns",columns)
             for (var columnIndex in columns) { // 칼럼 갯수만큼 돌면서 적절한 데이터 추가하기.
                 var column = columns[columnIndex];
                 data.push(row[columnIndex]);
@@ -97,7 +97,7 @@ function readCSV(filePath) {
     }
     //console.log("b",devices);
     devices = Array.from(new Set(devices));
-    console.log("c",devices);
+    // console.log("c",devices);
 
     return {'result':result, 'columns':columns,'devices':devices};
 }
@@ -140,7 +140,7 @@ app.post('/api/v1/mapping/file', (req,res)=>{
 
         // Insert Data into database
         var placeholders = "("+data.columns.map((language) => '?').join(',')+",datetime('now','localtime'))";
-        console.log("a", placeholders)
+        // console.log("a", placeholders)
         var sql = 'INSERT INTO MapTable(device, component, data, project, serial, vp, sensor, unit, created) VALUES ' + placeholders;
         var statement = db.prepare(sql);
 
@@ -176,55 +176,54 @@ app.post('/api/v1/mapping/file', (req,res)=>{
     })
 })
 
-app.get('/api/v1/data/devices', (req,res)=>{
-    db.all('SELECT * FROM MapTable', (err, rows)=>{ 
+app.get('/api/v1/data/devices', (req, res) => {
+    db.all('SELECT * FROM MapTable', (err, rows) => {
 
-        if(err) return res.status(400).send(err.message)
-     
-        if(rows){
-        var devices=[];            
-        var arr1=[];
+        if (err) return res.status(400).send(err.message)
 
-        rows.forEach(row=> {
-            arr1.push(row.device)
-        })
-        // console.log(arr1)
+        if (rows) {
+            var devices = [];
+            var arr1 = [];
 
-        function removeDuplicatesArray(arr) {
-            var tempArr = [];
-            for (var i = 0; i < arr.length; i++) {
-                if (tempArr.length == 0) {
-                    tempArr.push(arr[i]);
-                } else {
-                    var duplicatesFlag = true;
-                    for (var j = 0; j < tempArr.length; j++) {
-                        if (tempArr[j] == arr[i]) {
-                            duplicatesFlag = false;
-                            break;
+            rows.forEach(row => {
+                arr1.push(row.device)
+            })
+            // console.log(arr1)
+
+            function removeDuplicatesArray(arr) {
+                var tempArr = [];
+                for (var i = 0; i < arr.length; i++) {
+                    if (tempArr.length == 0) {
+                        tempArr.push(arr[i]);
+                        // console.log("1",tempArr);
+                    } else {
+                        var duplicatesFlag = true;
+                        for (var j = 0; j < tempArr.length; j++) {
+                            if (tempArr[j] == arr[i]) {
+                                duplicatesFlag = false;
+                                // console.log("2",tempArr);
+                                break;
+                            }
+                        }
+                        if (duplicatesFlag) {
+                            tempArr.push(arr[i]);
                         }
                     }
-                    if (duplicatesFlag) {
-                        tempArr.push(arr[i]);
-                    }
                 }
+                return tempArr;
             }
-            return tempArr;
-        }
 
-        var arr2 = removeDuplicatesArray(arr1);
-        
-        arr2.forEach(arr=> {
-            devices.push({"device_series":arr})
-        })
-    
-        // console.log(removeDuplicatesArray(arr1));
-       
-        return res.json(devices)
+            var arr2 = removeDuplicatesArray(arr1);
 
+            arr2.forEach(arr => {
+                devices.push({ "device_series": arr })
+            })
+
+            // console.log(removeDuplicatesArray(arr1));
+            return res.json(devices)
         }
-     })
-    
- })
+    })
+})
 
 // 맵핑 정보확인 API
 app.get('/api/v1/data/devices/:device_serial/map', (req,res)=>{
@@ -290,7 +289,7 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
     // console.log(serial)
     db.all('SELECT * FROM MapTable WHERE device=?', serial,(err, rows)=>{ 
         if(err) return res.status(400).send(err.message)
-        console.log("aa",rows)
+        // console.log("aa",rows)
 
         if(rows){
             var urls =[];
@@ -327,56 +326,89 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
 
                 return u
             })
+            function DateToString(pDate) {
+                var yyyy = pDate.getFullYear();
+                var mm = pDate.getMonth() < 9 ? "0" + (pDate.getMonth() + 1) : (pDate.getMonth() + 1); // getMonth() is zero-based
+                var dd  = pDate.getDate() < 10 ? "0" + pDate.getDate() : pDate.getDate();
+                var hh = pDate.getHours() < 10 ? "0" + pDate.getHours() : pDate.getHours();
+                var min = pDate.getMinutes() < 10 ? "0" + pDate.getMinutes() : pDate.getMinutes();
+                var sec = pDate.getSeconds() < 10 ? "0" + pDate.getSeconds() : pDate.getSeconds();
+                return "".concat(yyyy).concat("-").concat(mm).concat("-").concat(dd).concat("T").concat(hh).concat(":").concat(min).concat(":").concat(sec)
+            };
+            function Add_Time(add_time_1){
 
-            // console.log("e",urls_set);
+                if('sec' in req.query & !('min' in req.query) & !('hour' in req.query)){
+                    add_time_1 = add_time_1.setSeconds(add_time_1.getSeconds() +  Number(req.query.sec));
+                    add_time_1 = new Date(add_time_1);
+                    add_time_1 = DateToString(add_time_1); 
+                    console.log("sec");
+                };
+                if('min' in req.query & !('sec' in req.query) & !('hour' in req.query)){
+                    add_time_1 = add_time_1.setMinutes(add_time_1.getMinutes() + Number(req.query.min));
+                    add_time_1 = new Date(add_time_1);
+                    add_time_1 = DateToString(add_time_1)
+                    console.log("min");
+                };
+                if('hour' in req.query & !('sec' in req.query) & !('min' in req.query)){
+                    add_time_1 = add_time_1.setHours(add_time_1.getHours() + Number(req.query.hour));
+                    add_time_1 = new Date(add_time_1);
+                    add_time_1 = DateToString(add_time_1)
+
+                };
+                return add_time_1
+            }
+
             
+
             // API 동시 호출(비동기처리)
-            async.map(urls_set, getData, function (err, total_response){
+            async.map(urls_set, getData, function (err, total_response) {
                 if (err) return console.log(err);
                 // console.log("b",total_response[0][0].time);
                 // console.log("e",total_response);
                 // console.log("c",urls_set2);
-               //if('min' in req.query){
+                //if('min' in req.query){
 
-                var test_data={};
-                urls_set2.forEach((url,j)=>{
+
+                var test_data = {};
+                var json_str_time2;
+
+                urls_set2.forEach((url, j) => {
                     var target_vp = url.split('/')[6];
-                    total_response[j].forEach((d,i)=>{
-                    
-                        vps[target_vp].forEach((sensor)=>{
-                            //  console.log("d",d)
-                            //  console.log("i",i)
-                           // 객체 초기화
-                            if(i == 0){
-                                test_data[sensor] = [];
-                            }
-                            // 객체에 데이터 추가
-                            if('sec' in req.query & !('min' in req.query) & !('hour' in req.query)){
-                                if (i % req.query.sec == 0){
-                                    test_data[sensor].push({
-                                    "time":d.time,
-                                    "value":d[sensor]
-                            })}}
-                            
-                            else if('min' in req.query & !('sec' in req.query) & !('hour' in req.query)){
-                                if (i % (57*req.query.min) == 0){
-                                    test_data[sensor].push({
-                                    "time":d.time,
-                                    "value":d[sensor]
-                            })}}
+                    vps[target_vp].forEach((sensor) => {
+                        total_response[j].forEach((d, i) => {
 
-                            else if('hour' in req.query & !('sec' in req.query) & !('min' in req.query)){
-                                if (i % (req.query.hour*3375) == 0){
-                                    test_data[sensor].push({
-                                    "time":d.time,
-                                    "value":d[sensor]
-                            })}}
-                            else{
+                            // var start = new Date(d.time);
+                            // console.log("dd",d)
+
+                            var json_str_time = new Date(d.time)
+                            // console.log("aaa",json_str_time);
+                            json_str_time = DateToString(json_str_time)
+                            // console.log("aaa",json_str_time);
+                            // console.log("a", req.query.start_time);
+                            // console.log("i", i);
+                            if (i === 0) {
+                                test_data[sensor] = [];
                                 test_data[sensor].push({
-                                "time":d.time,
-                                "value":d[sensor]
-                            })}
+                                    "time": json_str_time,
+                                    "value": d[sensor]
+                                })
+                                json_str_time2 = new Date(json_str_time)
+                                json_str_time2 = Add_Time(json_str_time2)
+                            }
+                            // console.log("e",json_str_time)
+                            // console.log("f",json_str_time2)
+                            if (json_str_time2 <= json_str_time) {
+                                test_data[sensor].push({
+                                    "time": json_str_time,
+                                    "value": d[sensor]
+                                })
+
+                                json_str_time2 = new Date(json_str_time2);
+                                json_str_time2 = Add_Time(json_str_time2)
+                            }
+
                         })
+
                     })
                 })
 
@@ -389,9 +421,9 @@ app.get('/api/v1/data/devices/:device_serial/data', (req,res)=>{
                         },
                     }]
                 */
-                var data_set = Object.keys(test_data).map(d=>{
-                //    console.log(d)
-                   return {'sensor_id':d, 'data':test_data[d]};
+                var data_set = Object.keys(test_data).map(d => {
+                    // console.log(d)
+                    return { 'sensor_id': d, 'data': test_data[d] };
                 })
                 //console.log("d",data_set);
                 return res.send(data_set)
